@@ -33,10 +33,10 @@ public class BankServiceTests
     [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
-    public void CreateAccount_WithInvalidOwner_ShouldThrowException(string owner)
+    public void CreateAccount_WithInvalidOwner_ShouldThrowException(string? owner)
     {
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => _bankService.CreateAccount(owner));
+        Assert.Throws<ArgumentException>(() => _bankService.CreateAccount(owner!));
     }
 
     [Fact]
