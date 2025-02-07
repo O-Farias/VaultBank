@@ -8,7 +8,7 @@ public class Program
 {
     private static readonly BankService _bankService = new();
 
-    public static void Main()
+    public static void Main(string[] args)
     {
         while (true)
         {
