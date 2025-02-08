@@ -13,7 +13,7 @@ public class Program
         while (true)
         {
             DisplayHelper.ShowMainMenu();
-            int option = InputHelper.ReadOption("Escolha uma opção", 1, 4);
+            int option = InputHelper.ReadOption("Escolha uma opção", 1, 5);
 
             switch (option)
             {
@@ -27,7 +27,11 @@ public class Program
                     ListAccounts();
                     break;
                 case 4:
-                    Environment.Exit(0);
+                    DisplayHelper.ShowHelp();
+                    break;
+                case 5:
+                    if (DisplayHelper.ConfirmOperation("sair do sistema"))
+                        Environment.Exit(0);
                     break;
             }
         }
@@ -38,14 +42,48 @@ public class Program
         try
         {
             string owner = InputHelper.ReadString("Nome do titular");
-            var account = _bankService.CreateAccount(owner);
-            DisplayHelper.ShowSuccess($"Conta criada com sucesso!\nID da conta: {account.Id}");
+            if (DisplayHelper.ConfirmOperation("criação de conta"))
+            {
+                var account = _bankService.CreateAccount(owner);
+                DisplayHelper.ShowSuccess($"Conta criada com sucesso!\nID da conta: {account.Id}");
+            }
         }
         catch (Exception ex)
         {
             DisplayHelper.ShowError(ex.Message);
         }
         InputHelper.WaitForKey();
+    }
+
+    private static void HandleDeposit(string accountId)
+    {
+        decimal amount = InputHelper.ReadDecimal("Valor do depósito");
+        if (DisplayHelper.ConfirmOperation($"depósito de R$ {amount:F2}"))
+        {
+            _bankService.Deposit(accountId, amount);
+            DisplayHelper.ShowSuccess("Depósito realizado com sucesso!");
+        }
+    }
+
+    private static void HandleWithdraw(string accountId)
+    {
+        decimal amount = InputHelper.ReadDecimal("Valor do saque");
+        if (DisplayHelper.ConfirmOperation($"saque de R$ {amount:F2}"))
+        {
+            _bankService.Withdraw(accountId, amount);
+            DisplayHelper.ShowSuccess("Saque realizado com sucesso!");
+        }
+    }
+
+    private static void HandleTransfer(string fromAccountId)
+    {
+        string toAccountId = InputHelper.ReadString("ID da conta de destino");
+        decimal amount = InputHelper.ReadDecimal("Valor da transferência");
+        if (DisplayHelper.ConfirmOperation($"transferência de R$ {amount:F2}"))
+        {
+            _bankService.Transfer(fromAccountId, toAccountId, amount);
+            DisplayHelper.ShowSuccess("Transferência realizada com sucesso!");
+        }
     }
 
     private static void AccessAccount()
@@ -75,24 +113,26 @@ public class Program
             {
                 switch (option)
                 {
-                    case 1: // Consultar Saldo
+                    case 1:
                         DisplayHelper.ShowAccountDetails(account);
                         break;
-                    case 2: // Depositar
+                    case 2:
                         HandleDeposit(account.Id);
                         break;
-                    case 3: // Sacar
+                    case 3:
                         HandleWithdraw(account.Id);
                         break;
-                    case 4: // Transferir
+                    case 4:
                         HandleTransfer(account.Id);
                         break;
-                    case 5: // Extrato
+                    case 5:
                         var transactions = _bankService.GetAccountTransactions(account.Id);
                         DisplayHelper.ShowTransactions(transactions);
                         break;
-                    case 6: // Voltar
-                        return;
+                    case 6:
+                        if (DisplayHelper.ConfirmOperation("sair da conta"))
+                            return;
+                        break;
                 }
             }
             catch (Exception ex)
@@ -101,28 +141,6 @@ public class Program
             }
             InputHelper.WaitForKey();
         }
-    }
-
-    private static void HandleDeposit(string accountId)
-    {
-        decimal amount = InputHelper.ReadDecimal("Valor do depósito");
-        _bankService.Deposit(accountId, amount);
-        DisplayHelper.ShowSuccess("Depósito realizado com sucesso!");
-    }
-
-    private static void HandleWithdraw(string accountId)
-    {
-        decimal amount = InputHelper.ReadDecimal("Valor do saque");
-        _bankService.Withdraw(accountId, amount);
-        DisplayHelper.ShowSuccess("Saque realizado com sucesso!");
-    }
-
-    private static void HandleTransfer(string fromAccountId)
-    {
-        string toAccountId = InputHelper.ReadString("ID da conta de destino");
-        decimal amount = InputHelper.ReadDecimal("Valor da transferência");
-        _bankService.Transfer(fromAccountId, toAccountId, amount);
-        DisplayHelper.ShowSuccess("Transferência realizada com sucesso!");
     }
 
     private static void ListAccounts()
